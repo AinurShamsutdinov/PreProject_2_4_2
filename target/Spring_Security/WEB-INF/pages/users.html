@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<html lang="en">
+<link type="text/css" rel="stylesheet" id="dark-mode-general-link">
+<link type="text/css" rel="stylesheet" id="light-mode-custom-link">
+<style type="text/css" id="dark-mode-custom-style"></style>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>User list</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous">
+</head>
+<body>
+<div class="container">
+    <table border="1">
+        <caption>Users</caption>
+        <thead>
+        <tr>
+            <th> Name </th>
+            <th> Last name </th>
+            <th> Age </th>
+            <th> Password </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user : ${allUsers}">
+            <td><span th:text="${user.name}"> Name </span></td>
+            <td><span th:text="${user.lastName}"> Last name </span></td>
+            <td><span th:text="${user.age}"> Age </span></td>
+            <td><span th:text="${user.password}"> Password </span></td>
+            <td>
+                <table>
+                    <tr th:each="a: ${user.getRole()}">
+                        <td data-th-text="${a.role}">...</td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <a class="btn btn-primary" th:href="@{/update/__${user.getId()}__}"  role="button" >Update</a>
+            </td>
+            <td>
+                <a class="btn btn-primary" th:href="@{/deleteuser/__${user.getId()}__}" role="button" >Delete</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div>Add User:</div>
+    <form  th:action="@{/adduser}" th:object="${user}"  method="post">
+        <label>Name</label>
+        <input type="text" th:field="*{name}" />
+        <br>
+        <label>Last Name</label>
+        <input type="text" th:field="*{lastName}"/>
+        <br>
+        <label>Age</label>
+        <input type="number"  th:field="*{age}"/>
+        <br>
+        <label>Password</label>
+        <input type="text" th:field="*{password}"/>
+        <br>
+        <input type="submit" value="Submit"/>
+    </form>
+
+    <form class="form-signin" method="get" action="/userpage">
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Get user page</button>
+    </form>
+
+
+    <form class="form-signin" method="get" action="/logout">
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Logout</button>
+    </form>
+
+</div>
+</body>
+</html>
