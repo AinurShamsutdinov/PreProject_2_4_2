@@ -23,28 +23,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean addUser(User user) {
+    public void addUser(User user) {
         if(!isUserExist(user.getName())){
-            if (userDao.addUser(user)){
-                return true;
-            }
+            userDao.addUser(user);
         }
-        return false;
     }
 
     @Override
-    public boolean updateUserById(long id, User user) {
+    public void updateUserById(long id, User user) {
         if(!isUserExist(user.getName())){
-            if(userDao.updateUserById(id, user)){
-                return true;
-            }
+            userDao.updateUserById(id, user);
         }
-        return false;
     }
 
     @Override
-    public boolean deleteUserById(long id) {
-        return userDao.deleteUserById(id);
+    public void deleteUserById(long id) {
+        userDao.deleteUserById(id);
     }
 
     @Override

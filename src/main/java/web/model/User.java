@@ -1,6 +1,4 @@
 package web.model;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -104,10 +102,6 @@ public class User implements UserDetails {
         return this.roles;
     }
 
-//    public String getRole(){
-//        return roles.stream().findFirst().get().getRole();
-//    }
-
     public void setRole(Set roles){
         this.roles = roles;
     }
@@ -115,7 +109,6 @@ public class User implements UserDetails {
     public void addRole(Role role){
         this.roles.add(role);
     }
-
 
     @Override
     public String getUsername() {

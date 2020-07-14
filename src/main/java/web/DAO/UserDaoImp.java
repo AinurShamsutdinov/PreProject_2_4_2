@@ -1,75 +1,79 @@
 package web.DAO;
 
 import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.query.Query;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import web.model.User;
 
 
+import javax.persistence.*;
 import java.util.List;
 
 @Repository
+@Transactional
 public class UserDaoImp implements UserDao {
 
-    private SessionFactory sessionFactory;
+    private EntityManagerFactory entityManagerFactory;
 
-    @Autowired
-    public UserDaoImp(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    @PersistenceUnit
+    public void setEntityManager(EntityManagerFactory entityManagerFactory){
+        this.entityManagerFactory = entityManagerFactory;
+    }
+
+    @Transactional(readOnly = false)
+    public void flush(){
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.flush();
     }
 
     @Override
-    public boolean addUser(User user) {
-        try(Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            session.save(user);
-            session.getTransaction().commit();
-            return true;
-        }catch (HibernateException e){
+    public void addUser(User user) {
+        try {
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            entityManager.getTransaction().begin();
+            entityManager.persist(user);
+            entityManager.getTransaction().commit();
+        }catch (Exception e){
             e.printStackTrace();
         }
-        return false;
     }
 
     @Override
-    public boolean updateUserById(long id, User user) {
-        try(Session session = sessionFactory.openSession()){
-            session.beginTransaction();
-            session.update("id", user);
-            session.getTransaction().commit();
-            return true;
-        }catch (HibernateException e){
+    public void updateUserById(long id, User user) {
+        try{
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            entityManager.getTransaction().begin();
+            entityManager.merge(user);
+            entityManager.getTransaction().commit();
+        }catch (Exception e){
             e.printStackTrace();
         }
-        return false;
     }
 
     @Override
-    public boolean deleteUserById(long id) {
-        try(Session session = sessionFactory.openSession()){
-            session.beginTransaction();
-            Query<User> queryUser = session.createQuery("delete User user where user.id =: id");
-            queryUser.setParameter("id", id);
-            queryUser.executeUpdate();
-            session.getTransaction().commit();
-            return true;
-        }catch (HibernateException e){
+    public void deleteUserById(long id) {
+        try{
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            User user = entityManager.find(User.class, id);
+            if (user != null) {
+                entityManager.getTransaction().begin();
+                entityManager.remove(user);
+                entityManager.getTransaction().commit();
+            }
+        }catch (Exception e){
             e.printStackTrace();
         }
-        return false;
     }
 
     @Override
     public User getUserByName(String name) {
-        try(Session session = sessionFactory.openSession()){
-            session.beginTransaction();
-            Query query = session.createQuery("select user from User user where user.name=:name", User.class);
+        try{
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            entityManager.getTransaction().begin();
+            TypedQuery<User> query = entityManager.createQuery("select user from User user where user.name=:name", User.class);
             query.setParameter("name", name);
             User user = (User) query.getSingleResult();
-            session.getTransaction().commit();
+            entityManager.getTransaction().commit();
             return user;
         }catch (HibernateException e){
             e.printStackTrace();
@@ -78,23 +82,24 @@ public class UserDaoImp implements UserDao {
     }
 
     public boolean isUserExist(String name){
-        try(Session session = sessionFactory.openSession()){
-            Query query = session.createQuery("select 1 from User user where user.name =: name");
+        try{
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            entityManager.getTransaction().begin();
+            TypedQuery<User> query = entityManager.createQuery("select user from User user where user.name=:name", User.class);
             query.setParameter("name", name);
-            return  query.uniqueResult() != null;
-        }catch (HibernateException e){
-            e.printStackTrace();
+            User user = query.getSingleResult();
+            entityManager.getTransaction().commit();
+            return  user != null;
+        }catch (NoResultException e){
+            return false;
         }
-        return false;
     }
 
     @Override
     public User getUserById(long id) {
-        try(Session session = sessionFactory.openSession()){
-            session.beginTransaction();
-            User user = (User) session.get(User.class, id);
-            session.getTransaction().commit();
-            return user;
+        try{
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            return entityManager.find(User.class, id);
         }catch (HibernateException e){
             e.printStackTrace();
         }
@@ -103,12 +108,13 @@ public class UserDaoImp implements UserDao {
 
     @Override
     public List<User> getUsersList() {
-        Session session =sessionFactory.openSession();
-        String hql = "FROM User";
-        Query query = session.createQuery(hql);
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        TypedQuery<User> query = entityManager.createQuery("select user from User user", User.class);
         List<User> userList = query.getResultList();
         return userList;
     }
+
+
 
 
 }
